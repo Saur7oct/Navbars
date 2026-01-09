@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Navbar</title>
+    <style>
+        /* --- 1. RESET & BASIC SETUP --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 42, 179, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(21, 206, 209, 0.4) 0%, transparent 40%);
+            height: 200vh; /* To enable scrolling */
+            color: #fff;
+        }
+
+        /* --- 2. NAVBAR CONTAINER (Glassmorphism) --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        /* --- 3. ANIMATED LOGO SECTION --- */
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        /* The SVG Container */
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* SVG Shape Styles */
+        .logo-shape {
+            fill: none;
+            stroke: #00d2ff;
+            stroke-width: 20;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawLogo 3s ease forwards, glow 2s ease-in-out infinite alternate;
+        }
+
+        /* The Company Name Text */
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5, #00d2ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shineText 3s linear infinite;
+        }
+
+        /* --- 4. NAVIGATION LINKS --- */
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links li a {
+            text-decoration: none;
+            color: #e0e0e0;
+            font-size: 1rem;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        /* Link Underline Animation */
+        .nav-links li a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: #00d2ff;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links li a:hover {
+            color: #00d2ff;
+        }
+
+        .nav-links li a:hover::after {
+            width: 100%;
+        }
+
+        /* --- 5. HAMBURGER MENU (Mobile) --- */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .bar {
+            width: 25px;
+            height: 3px;
+            background-color: #fff;
+            transition: 0.3s;
+        }
+
+        /* --- 6. ANIMATIONS --- */
+        
+        /* Draws the SVG lines */
+        @keyframes drawLogo {
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Makes the logo float up and down slightly */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Adds a neon glow pulse */
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 2px #00d2ff); }
+            to { filter: drop-shadow(0 0 10px #00d2ff); }
+        }
+
+        /* Moves the gradient across the text */
+        @keyframes shineText {
+            to { background-position: 200% center; }
+        }
+
+        /* --- 7. RESPONSIVE DESIGN --- */
+        @media (max-width: 768px) {
+            .nav-links {
+                position: absolute;
+                top: 70px;
+                right: 0;
+                height: calc(100vh - 70px);
+                background: rgba(26, 26, 46, 0.95);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                align-items: center;
+                width: 50%;
+                transform: translateX(100%);
+                transition: transform 0.4s ease-in;
+                padding-top: 50px;
+            }
+
+            .nav-links.active {
+                transform: translateX(0%);
+            }
+
+            .hamburger {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand-container">
+            <svg class="logo-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <path class="logo-shape" d="M256,48 L448,144 L448,368 L256,464 L64,368 L64,144 Z" />
+            </svg>
+            
+            <div class="brand-name">AETHER</div>
+        </div>
+
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Services</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+
+        <div class="hamburger">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+    </nav>
+
+    <div style="padding: 150px 5%;">
+        <h1>Welcome to the Future</h1>
+        <p>Scroll down to see the navbar blur effect.</p>
+    </div>
+
+    <script>
+        // Simple script to toggle mobile menu
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

@@ -18,7 +18,7 @@
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(99, 42, 179, 0.4) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(21, 206, 209, 0.4) 0%, transparent 40%);
-            height: 200vh; /* To enable scrolling */
+            min-height: 200vh;
             color: #fff;
         }
 
@@ -129,7 +129,139 @@
             transition: 0.3s;
         }
 
-        /* --- 6. ANIMATIONS --- */
+        /* --- 6. BEAUTIFUL DEMO BUTTONS SECTION --- */
+        .demo-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 150px 5% 50px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(0, 210, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .demo-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .demo-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 210, 255, 0.2);
+            border-color: rgba(0, 210, 255, 0.3);
+        }
+
+        .demo-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 210, 255, 0.1);
+            border-radius: 50%;
+            font-size: 2.5rem;
+            color: #00d2ff;
+            transition: all 0.3s ease;
+        }
+
+        .demo-card:hover .demo-icon {
+            background: rgba(0, 210, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .demo-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .demo-description {
+            color: #b0b0b0;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        .demo-button {
+            display: inline-block;
+            padding: 12px 35px;
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .demo-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3);
+        }
+
+        .demo-button:hover::before {
+            opacity: 1;
+        }
+
+        /* --- 7. ANIMATIONS --- */
         
         /* Draws the SVG lines */
         @keyframes drawLogo {
@@ -153,7 +285,7 @@
             to { background-position: 200% center; }
         }
 
-        /* --- 7. RESPONSIVE DESIGN --- */
+        /* --- 8. RESPONSIVE DESIGN --- */
         @media (max-width: 768px) {
             .nav-links {
                 position: absolute;
@@ -176,6 +308,30 @@
 
             .hamburger {
                 display: flex;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .demo-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .demo-card {
+                padding: 30px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-title {
+                font-size: 1.8rem;
+                margin-bottom: 40px;
+            }
+
+            .demo-title {
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -205,9 +361,65 @@
         </div>
     </nav>
 
-    <div style="padding: 150px 5%;">
-        <h1>Welcome to the Future</h1>
-        <p>Scroll down to see the navbar blur effect.</p>
+    <div class="demo-section">
+        <h1 class="section-title">Navbar Demo Collection</h1>
+        
+        <div class="demo-grid">
+            <!-- Navbar 2 Card -->
+            <div class="demo-card">
+                <div class="demo-icon">✨</div>
+                <h3 class="demo-title">Navbar 2</h3>
+                <p class="demo-description">
+                    A sleek dark theme navbar with animated icons and smooth transitions. Perfect for modern web applications.
+                </p>
+                <a href="navbar2.html" class="demo-button">
+                    <span>View Demo</span>
+                </a>
+            </div>
+
+            <!-- Navbar 3 Card -->
+            <div class="demo-card">
+                <div class="demo-icon">🚀</div>
+                <h3 class="demo-title">Navbar 3</h3>
+                <p class="demo-description">
+                    Gradient-powered navbar with floating elements and particle effects. Ideal for creative portfolios.
+                </p>
+                <a href="navbar3.html" class="demo-button">
+                    <span>Explore Design</span>
+                </a>
+            </div>
+
+            <!-- Navbar 4 Card -->
+            <div class="demo-card">
+                <div class="demo-icon">🎨</div>
+                <h3 class="demo-title">Navbar 4</h3>
+                <p class="demo-description">
+                    Glassmorphism navbar with interactive menu and 3D hover effects. Great for premium websites.
+                </p>
+                <a href="navbar4.html" class="demo-button">
+                    <span>See Features</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Additional Info Section -->
+        <div style="text-align: center; margin-top: 60px; padding: 40px; background: rgba(255, 255, 255, 0.03); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05);">
+            <h2 style="color: #00d2ff; margin-bottom: 20px; font-size: 2rem;">All Navbars Feature</h2>
+            <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-top: 30px;">
+                <div style="text-align: center;">
+                    <div style="width: 60px; height: 60px; background: rgba(0, 210, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #00d2ff; font-size: 1.5rem;">📱</div>
+                    <p>Mobile Responsive</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 60px; height: 60px; background: rgba(0, 210, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #00d2ff; font-size: 1.5rem;">⚡</div>
+                    <p>Smooth Animations</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 60px; height: 60px; background: rgba(0, 210, 255, 0.1); border-radius: 50%; display-flex: center; justify-content: center; margin: 0 auto 15px; color: #00d2ff; font-size: 1.5rem;">🎯</div>
+                    <p>Modern Design</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -217,6 +429,24 @@
 
         hamburger.addEventListener('click', () => {
             navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking on a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Add click animation to demo buttons
+        document.querySelectorAll('.demo-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Add click effect
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
         });
     </script>
 </body>

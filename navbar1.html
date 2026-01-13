@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Capsule Navbar with Dropdowns</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- 1. UNIQUE VARIABLE SYSTEM --- */
+        :root {
+            --primary-bg: #0f172a;
+            --nav-bg: rgba(30, 41, 59, 0.95);
+            --accent-color: #f43f5e;
+            --secondary-color: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --dropdown-bg: rgba(15, 23, 42, 0.98);
+            --glow-spread: 0px 10px 30px -10px rgba(244, 63, 94, 0.5);
+            --dropdown-glow: 0px 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- 2. BASE RESET --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--primary-bg);
+            font-family: 'Space Grotesk', sans-serif;
+            height: 200vh;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* --- 3. FLOATING CAPSULE CONTAINER --- */
+        .header-shell {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1200px;
+            background: var(--nav-bg);
+            border-radius: 50px;
+            padding: 10px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            z-index: 9999;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-shell:hover {
+            border-color: rgba(244, 63, 94, 0.3);
+            box-shadow: var(--glow-spread);
+        }
+
+        /* --- 4. ORBITAL LOGO ANIMATION --- */
+        .identity-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            z-index: 10001;
+        }
+
+        .orbit-svg {
+            width: 45px;
+            height: 45px;
+        }
+
+        .ring-outer {
+            transform-origin: center;
+            stroke: var(--text-muted);
+            animation: spin-right 8s linear infinite;
+        }
+
+        .ring-inner {
+            transform-origin: center;
+            stroke: var(--accent-color);
+            animation: spin-left 4s linear infinite;
+        }
+
+        .core-dot {
+            fill: var(--text-main);
+            animation: pulse-core 2s ease-in-out infinite;
+        }
+
+        /* --- 5. KINETIC TEXT ANIMATION --- */
+        .kinetic-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: 0px;
+            position: relative;
+            transition: letter-spacing 0.3s ease;
+        }
+
+        .identity-group:hover .kinetic-text {
+            letter-spacing: 3px;
+            color: var(--accent-color);
+        }
+
+        /* --- 6. NAV MENU ITEMS & DROPDOWNS --- */
+        .menu-list {
+            list-style: none;
+            display: flex;
+            gap: 5px;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            z-index: 10000;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .menu-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 12px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Dropdown arrow animation */
+        .menu-link.has-dropdown::after {
+            content: "▾";
+            font-size: 0.8em;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-link.has-dropdown:hover::after {
+            transform: rotate(180deg);
+        }
+
+        .menu-link:hover {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Unique hover animations for each dropdown */
+        .menu-link.platform:hover {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent);
+            border-left: 3px solid var(--secondary-color);
+        }
+
+        .menu-link.solutions:hover {
+            background: linear-gradient(90deg, rgba(244, 63, 94, 0.1), transparent);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .menu-link.resources:hover {
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.1), transparent);
+            border-left: 3px solid #22c55e;
+        }
+
+        /* --- 7. DROPDOWN CONTAINERS --- */
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--dropdown-bg);
+            min-width: 240px;
+            border-radius: 20px;
+            padding: 15px 0;
+            box-shadow: var(--dropdown-glow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10000;
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-item:hover .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(5px);
+        }
+
+        /* Unique dropdown animations */
+        .platform-dropdown {
+            animation-delay: 0.1s;
+            transform-origin: top left;
+        }
+
+        .solutions-dropdown {
+            animation-delay: 0.2s;
+            transform-origin: top center;
+        }
+
+        .resources-dropdown {
+            animation-delay: 0.3s;
+            transform-origin: top right;
+        }
+
+        /* Dropdown items */
+        .dropdown-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dropdown-link:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            padding-left: 35px;
+        }
+
+        /* Unique icon animations */
+        .dropdown-icon {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-link:hover .dropdown-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .dropdown-link::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--accent-color);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-link:hover::before {
+            transform: scaleY(1);
+        }
+
+        /* Special animation for dropdown headers */
+        .dropdown-header {
+            padding: 10px 25px;
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Call to Action Button */
+        .menu-link.cta {
+            background-color: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-link.cta::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .menu-link.cta:hover::before {
+            left: 100%;
+        }
+
+        .menu-link.cta:hover {
+            background-color: #e11d48;
+            transform: translateY(-2px);
+        }
+
+        /* --- 8. MOBILE MENU TOGGLE --- */
+        .mobile-trigger {
+            display: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            z-index: 10001;
+        }
+        
+        .trigger-line {
+            display: block;
+            width: 25px;
+            height: 2px;
+            background: var(--text-main);
+            margin: 6px 0;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        /* --- 9. KEYFRAME ANIMATIONS --- */
+        @keyframes spin-right {
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes spin-left {
+            100% { transform: rotate(-360deg); }
+        }
+
+        @keyframes pulse-core {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.8); opacity: 0.7; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+            50% { box-shadow: 0 4px 30px rgba(244, 63, 94, 0.3); }
+        }
+
+        /* --- 10. RESPONSIVE LOGIC --- */
+        @media (max-width: 1024px) {
+            .dropdown-content {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                background: transparent;
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                margin-top: 10px;
+                margin-left: 20px;
+                display: none;
+                animation: none;
+            }
+            
+            .nav-item:hover .dropdown-content {
+                transform: none;
+            }
+            
+            .dropdown-content.is-open {
+                display: block;
+                animation: slideIn 0.3s ease;
+            }
+            
+            .menu-link.has-dropdown::after {
+                transition: transform 0.3s ease;
+            }
+            
+            .menu-link.has-dropdown.is-open::after {
+                transform: rotate(180deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-shell {
+                top: 0;
+                width: 100%;
+                border-radius: 0;
+                border: none;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                animation: pulse-glow 4s infinite;
+            }
+
+            .menu-list {
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: var(--primary-bg);
+                flex-direction: column;
+                padding: 20px 0;
+                text-align: left;
+                clip-path: circle(0% at 100% 0); 
+                transition: clip-path 0.5s ease-in-out;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+
+            .menu-list.is-open {
+                clip-path: circle(150% at 100% 0);
+            }
+            
+            .nav-item {
+                width: 100%;
+            }
+            
+            .menu-link {
+                border-radius: 0;
+                padding: 15px 30px;
+                justify-content: space-between;
+            }
+            
+            .dropdown-content {
+                margin-left: 30px;
+                margin-top: 0;
+                padding: 5px 0;
+            }
+            
+            .dropdown-link {
+                padding: 10px 30px;
+            }
+
+            .mobile-trigger {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="header-shell">
+        <a href="#" class="identity-group">
+            <svg class="orbit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle class="ring-outer" cx="50" cy="50" r="40" fill="none" stroke-width="4" stroke-dasharray="60 20" />
+                <circle class="ring-inner" cx="50" cy="50" r="25" fill="none" stroke-width="4" stroke-dasharray="40 10" />
+                <circle class="core-dot" cx="50" cy="50" r="8" />
+            </svg>
+            <span class="kinetic-text">NEXUS</span>
+        </a>
+
+        <ul class="menu-list">
+            <li class="nav-item">
+                <a href="#" class="menu-link has-dropdown platform">
+                    <i class="fas fa-cube"></i>
+                    Platform
+                </a>
+                <div class="dropdown-content platform-dropdown">
+                    <div class="dropdown-header">Core Features</div>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-brain"></i></span>
+                        AI Dashboard
+                    </a>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-database"></i></span>
+                        Data Analytics
+                    </a>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-bolt"></i></span>
+                        Real-time Processing
+                    </a>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-shield-alt"></i></span>
+                        Security Suite
+                    </a>
+                </div>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="menu-link has-dropdown solutions">
+                    <i class="fas fa-puzzle-piece"></i>
+                    Solutions
+                </a>
+                <div class="dropdown-content solutions-dropdown">
+                    <div class="dropdown-header">Industries</div>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-heartbeat"></i></span>
+                        Healthcare
+                    </a>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-university"></i></span>
+                        Finance
+                    </a>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-shopping-cart"></i></span>
+                        E-commerce
+                    </a>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-graduation-cap"></i></span>
+                        Education
+                    </a>
+                </div>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="menu-link has-dropdown resources">
+                    <i class="fas fa-book-open"></i>
+                    Resources
+                </a>
+                <div class="dropdown-content resources-dropdown">
+                    <div class="dropdown-header">Learn & Connect</div>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-file-alt"></i></span>
+                        Documentation
+                    </a>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-video"></i></span>
+                        Tutorial Videos
+                    </a>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-comments"></i></span>
+                        Community Forum
+                    </a>
+                    <a href="#" class="dropdown-link">
+                        <span class="dropdown-icon"><i class="fas fa-newspaper"></i></span>
+                        Blog & Updates
+                    </a>
+                </div>
+            </li>
+            
+            <li><a href="#" class="menu-link">Pricing</a></li>
+            <li><a href="#" class="menu-link cta">Get Started</a></li>
+        </ul>
+
+        <button class="mobile-trigger" aria-label="Menu">
+            <span class="trigger-line"></span>
+            <span class="trigger-line"></span>
+        </button>
+    </nav>
+
+    <div style="margin-top: 150px; text-align: center; color: white; padding: 20px;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 20px;">Advanced Navigation System</h1>
+        <p style="font-size: 1.2rem; max-width: 600px; margin: 0 auto 30px; color: var(--text-muted);">
+            Experience unique animated dropdown menus with distinct visual identities and smooth interactions.
+        </p>
+        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 40px; flex-wrap: wrap;">
+            <div style="background: rgba(30, 41, 59, 0.5); padding: 20px; border-radius: 15px; max-width: 300px;">
+                <h3><i class="fas fa-cube" style="color: var(--secondary-color);"></i> Platform Dropdown</h3>
+                <p>Hover to see the blue-themed animated dropdown with core features</p>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.5); padding: 20px; border-radius: 15px; max-width: 300px;">
+                <h3><i class="fas fa-puzzle-piece" style="color: var(--accent-color);"></i> Solutions Dropdown</h3>
+                <p>Hover to see the red-themed animated dropdown with industry solutions</p>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.5); padding: 20px; border-radius: 15px; max-width: 300px;">
+                <h3><i class="fas fa-book-open" style="color: #22c55e;"></i> Resources Dropdown</h3>
+                <p>Hover to see the green-themed animated dropdown with learning materials</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const trigger = document.querySelector('.mobile-trigger');
+        const menu = document.querySelector('.menu-list');
+
+        trigger.addEventListener('click', () => {
+            menu.classList.toggle('is-open');
+            
+            // Animate lines to X shape
+            const lines = document.querySelectorAll('.trigger-line');
+            if (menu.classList.contains('is-open')) {
+                lines[0].style.transform = 'rotate(45deg) translate(5px, 6px)';
+                lines[1].style.transform = 'rotate(-45deg) translate(5px, -6px)';
+            } else {
+                lines[0].style.transform = 'none';
+                lines[1].style.transform = 'none';
+            }
+        });
+
+        // Mobile dropdown toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropdownLinks = document.querySelectorAll('.menu-link.has-dropdown');
+            
+            // For mobile/tablet
+            if (window.innerWidth <= 1024) {
+                dropdownLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        if (window.innerWidth <= 1024) {
+                            e.preventDefault();
+                            const dropdown = link.nextElementSibling;
+                            const isOpen = dropdown.classList.contains('is-open');
+                            
+                            // Close all other dropdowns
+                            document.querySelectorAll('.dropdown-content.is-open').forEach(d => {
+                                if (d !== dropdown) {
+                                    d.classList.remove('is-open');
+                                    d.previousElementSibling.classList.remove('is-open');
+                                }
+                            });
+                            
+                            // Toggle current dropdown
+                            dropdown.classList.toggle('is-open');
+                            link.classList.toggle('is-open');
+                        }
+                    });
+                });
+            }
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 1024) {
+                    if (!e.target.closest('.nav-item')) {
+                        document.querySelectorAll('.dropdown-content.is-open').forEach(dropdown => {
+                            dropdown.classList.remove('is-open');
+                            dropdown.previousElementSibling.classList.remove('is-open');
+                        });
+                    }
+                }
+            });
+        });
+
+        // Add animation to dropdown items on hover
+        document.querySelectorAll('.dropdown-link').forEach((link, index) => {
+            link.style.animationDelay = `${index * 0.05}s`;
+        });
+    </script>
+</body>
+</html>

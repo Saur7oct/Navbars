@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luminous Glass Navbar - Animated Dropdown</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 1. MODERN VARIABLE SYSTEM --- */
+        :root {
+            --bg-void: #050505;
+            --glass-surface: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            
+            /* Gradient Brand Colors */
+            --brand-gradient: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%);
+            --accent-glow: #0072FF;
+            
+            /* Dropdown Variables */
+            --dropdown-bg: rgba(20, 20, 25, 0.95);
+            --dropdown-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- 2. AMBIENT BACKGROUND --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-void);
+            font-family: 'Outfit', sans-serif;
+            height: 150vh;
+            overflow-x: hidden;
+            color: var(--text-main);
+        }
+
+        /* Animated Background Orbs */
+        .ambient-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.6;
+            animation: float-orb 10s ease-in-out infinite alternate;
+        }
+        .orb-1 {
+            top: -10%; left: 20%; width: 400px; height: 400px;
+            background: #4f46e5;
+        }
+        .orb-2 {
+            top: 10%; right: 10%; width: 300px; height: 300px;
+            background: #0ea5e9;
+            animation-delay: -5s;
+        }
+
+        /* --- 3. GLASS NAVBAR CONTAINER --- */
+        .nav-glass {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1100px;
+            height: 70px;
+            
+            /* The Glass Effect */
+            background: var(--glass-surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 1000;
+            transition: all 0.4s ease;
+        }
+
+        .nav-glass:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 40px rgba(0, 114, 255, 0.15);
+        }
+
+        /* --- 4. ANIMATED HOLOGRAPHIC LOGO (UPDATED) --- */
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            perspective: 1000px; /* For 3D rotation effect */
+        }
+
+        .logo-prism {
+            width: 32px;
+            height: 32px;
+            filter: drop-shadow(0 0 8px rgba(0, 198, 255, 0.6));
+            
+            /* NEW: Zero-G Floating Animation */
+            animation: zero-g-float 6s ease-in-out infinite;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            
+            /* NEW: Holographic Shimmer Text */
+            background: linear-gradient(
+                90deg, 
+                #ffffff 0%, 
+                #ffffff 40%, 
+                #00C6FF 50%, 
+                #ffffff 60%, 
+                #ffffff 100%
+            );
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shimmer-text 3s linear infinite;
+        }
+
+        /* --- 5. BOUNCY MENU LINKS --- */
+        .nav-menu {
+            display: flex;
+            gap: 8px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.03);
+        }
+
+        /* Dropdown Arrow */
+        .dropdown-arrow {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid currentColor;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item:hover .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Character Bounce Logic */
+        .char-bounce {
+            display: inline-block;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover .char-bounce {
+            color: #fff;
+            animation: snap-bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation-delay: calc(var(--i) * 0.04s);
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        /* --- 6. DROPDOWN MENUS --- */
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--dropdown-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--dropdown-border);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            z-index: 1001;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .nav-item:hover .dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(15px);
+        }
+
+        .dropdown::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid var(--dropdown-border);
+        }
+
+        /* --- 7. UNIQUE DROPDOWN BUTTON STYLES --- */
+        .dropdown-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 12px 16px;
+            margin: 4px 0;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Button 1: Glow Slide */
+        .btn-glow-slide {
+            border-left: 3px solid transparent;
+        }
+
+        .btn-glow-slide:hover {
+            color: #fff;
+            background: rgba(0, 198, 255, 0.1);
+            border-left-color: #00C6FF;
+            transform: translateX(5px);
+        }
+
+        .btn-glow-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 198, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-glow-slide:hover::before {
+            left: 100%;
+        }
+
+        /* Button 2: Pulse Circle */
+        .btn-pulse-circle {
+            border: 1px solid transparent;
+        }
+
+        .btn-pulse-circle:hover {
+            color: #fff;
+            background: rgba(123, 97, 255, 0.1);
+            border-color: rgba(123, 97, 255, 0.3);
+            box-shadow: 0 0 15px rgba(123, 97, 255, 0.3);
+        }
+
+        .btn-pulse-circle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #7B61FF;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .btn-pulse-circle:hover::after {
+            opacity: 1;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        /* Button 3: Gradient Fill */
+        .btn-gradient-fill {
+            background: linear-gradient(to right, transparent 50%, rgba(0, 114, 255, 0.1) 50%);
+            background-size: 200% 100%;
+            background-position: right bottom;
+            transition: all 0.4s ease;
+        }
+
+        .btn-gradient-fill:hover {
+            color: #fff;
+            background-position: left bottom;
+            transform: scale(1.02);
+        }
+
+        /* Button 4: Bounce Icon */
+        .btn-bounce-icon {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-bounce-icon .icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-bounce-icon:hover {
+            color: #fff;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .btn-bounce-icon:hover .icon {
+            animation: bounce-icon 0.5s ease;
+        }
+
+        /* --- 8. "SHINE" CTA BUTTON --- */
+        .btn-shine {
+            position: relative;
+            padding: 10px 24px;
+            background: var(--brand-gradient);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-shine span {
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-shine::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+                90deg, 
+                transparent, 
+                rgba(255,255,255,0.4), 
+                transparent
+            );
+            transform: skewX(-20deg);
+            transition: left 0.5s;
+            z-index: 1;
+        }
+
+        .btn-shine:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 114, 255, 0.4);
+        }
+
+        .btn-shine:hover::before {
+            left: 150%;
+            transition: left 0.7s ease-in-out;
+        }
+
+        /* --- 9. MOBILE TRIGGER --- */
+        .mobile-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .bar {
+            width: 24px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        /* --- 10. ANIMATIONS --- */
+        
+        /* NEW: Zero Gravity Float for Logo */
+        @keyframes zero-g-float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        /* NEW: Shimmer Text for Company Name */
+        @keyframes shimmer-text {
+            to { background-position: 200% center; }
+        }
+
+        @keyframes float-orb {
+            0% { transform: translateY(0px) scale(1); }
+            100% { transform: translateY(40px) scale(1.1); }
+        }
+
+        @keyframes snap-bounce {
+            0% { transform: translateY(0); }
+            40% { transform: translateY(-6px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* New Dropdown Button Animations */
+        @keyframes pulse-dot {
+            0% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-50%) scale(1.5); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+
+        @keyframes bounce-icon {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(3px); }
+        }
+
+        /* --- 11. RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .nav-glass {
+                top: 0;
+                width: 100%;
+                max-width: none;
+                border-radius: 0;
+                border: none;
+                border-bottom: 1px solid var(--glass-border);
+                background: rgba(5, 5, 5, 0.8);
+            }
+            
+            .nav-menu {
+                position: fixed;
+                top: 70px; left: 0;
+                width: 100%;
+                background: var(--bg-void);
+                flex-direction: column;
+                align-items: center;
+                padding: 40px 0;
+                gap: 20px;
+                clip-path: circle(0% at 100% 0);
+                transition: clip-path 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1000;
+            }
+            
+            .nav-menu.active {
+                clip-path: circle(150% at 100% 0);
+            }
+
+            .dropdown {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                background: rgba(255, 255, 255, 0.03);
+                border: none;
+                box-shadow: none;
+                margin-top: 10px;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease;
+            }
+
+            .dropdown.active {
+                max-height: 300px;
+            }
+
+            .dropdown::before {
+                display: none;
+            }
+
+            .mobile-toggle { display: flex; }
+            .btn-shine { display: none; }
+            
+            /* Mobile dropdown arrow */
+            .mobile-dropdown-arrow {
+                margin-left: auto;
+                transition: transform 0.3s ease;
+            }
+            
+            .nav-item.active .mobile-dropdown-arrow {
+                transform: rotate(180deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+
+    <nav class="nav-glass">
+        <a href="#" class="brand-box">
+            <svg class="logo-prism" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 5L95 80H5L50 5Z" fill="url(#prism_grad)" opacity="0.8"/>
+                <path d="M50 25L80 75H20L50 25Z" fill="#050505"/>
+                <circle cx="50" cy="55" r="8" fill="white"/>
+                <defs>
+                    <linearGradient id="prism_grad" x1="50" y1="5" x2="50" y2="80" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#00C6FF"/>
+                        <stop offset="1" stop-color="#0072FF"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span class="logo-text">AETHER</span>
+        </a>
+
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="char-bounce">P</span><span class="char-bounce">r</span><span class="char-bounce">o</span><span class="char-bounce">d</span><span class="char-bounce">u</span><span class="char-bounce">c</span><span class="char-bounce">t</span>
+                    <span class="dropdown-arrow"></span>
+                </a>
+                <div class="dropdown">
+                    <button class="dropdown-btn btn-glow-slide">Dashboard</button>
+                    <button class="dropdown-btn btn-pulse-circle">Analytics</button>
+                    <button class="dropdown-btn btn-gradient-fill">Settings</button>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="char-bounce">F</span><span class="char-bounce">e</span><span class="char-bounce">a</span><span class="char-bounce">t</span><span class="char-bounce">u</span><span class="char-bounce">r</span><span class="char-bounce">e</span><span class="char-bounce">s</span>
+                    <span class="dropdown-arrow"></span>
+                </a>
+                <div class="dropdown">
+                    <button class="dropdown-btn btn-bounce-icon">
+                        <span class="icon">⚡</span>
+                        <span>Speed Boost</span>
+                    </button>
+                    <button class="dropdown-btn btn-glow-slide">Security</button>
+                    <button class="dropdown-btn btn-pulse-circle">Integration</button>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="char-bounce">C</span><span class="char-bounce">o</span><span class="char-bounce">m</span><span class="char-bounce">m</span><span class="char-bounce">u</span><span class="char-bounce">n</span><span class="char-bounce">i</span><span class="char-bounce">t</span><span class="char-bounce">y</span>
+                    <span class="dropdown-arrow"></span>
+                </a>
+                <div class="dropdown">
+                    <button class="dropdown-btn btn-gradient-fill">Forums</button>
+                    <button class="dropdown-btn btn-bounce-icon">
+                        <span class="icon">👥</span>
+                        <span>Meetups</span>
+                    </button>
+                    <button class="dropdown-btn btn-glow-slide">Blog</button>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="char-bounce">S</span><span class="char-bounce">u</span><span class="char-bounce">p</span><span class="char-bounce">p</span><span class="char-bounce">o</span><span class="char-bounce">r</span><span class="char-bounce">t</span>
+                    <span class="dropdown-arrow"></span>
+                </a>
+                <div class="dropdown">
+                    <button class="dropdown-btn btn-pulse-circle">Help Center</button>
+                    <button class="dropdown-btn btn-gradient-fill">Contact</button>
+                    <button class="dropdown-btn btn-bounce-icon">
+                        <span class="icon">📚</span>
+                        <span>Documentation</span>
+                    </button>
+                </div>
+            </li>
+        </ul>
+
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <button class="btn-shine"><span>Get Access</span></button>
+            <button class="mobile-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div style="padding-top: 200px; text-align: center; max-width: 600px; margin: 0 auto;">
+        <h1 style="font-size: 3rem; margin-bottom: 10px; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; color: transparent;">Enhanced Dropdown Navbar</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6;">
+            Now with animated dropdown menus featuring uniquely animated buttons. 
+            Hover over the menu items to see the effects.
+        </p>
+        <div style="margin-top: 40px; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; min-width: 200px;">
+                <h4 style="color: #00C6FF; margin-top: 0;">Glow Slide</h4>
+                <p style="font-size: 0.9rem;">Left-border glow with sliding effect</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; min-width: 200px;">
+                <h4 style="color: #7B61FF; margin-top: 0;">Pulse Circle</h4>
+                <p style="font-size: 0.9rem;">Pulsing dot with border animation</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; min-width: 200px;">
+                <h4 style="color: #0072FF; margin-top: 0;">Gradient Fill</h4>
+                <p style="font-size: 0.9rem;">Smooth gradient background fill</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; min-width: 200px;">
+                <h4 style="color: #FF6B6B; margin-top: 0;">Bounce Icon</h4>
+                <p style="font-size: 0.9rem;">Icon bounce animation on hover</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Setup Bouncy Characters
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const text = link.textContent;
+            // Only process if it doesn't already have char-bounce spans
+            if (!link.querySelector('.char-bounce')) {
+                const textContent = link.childNodes[0]?.nodeValue || '';
+                if (textContent.trim()) {
+                    link.innerHTML = '';
+                    
+                    textContent.split('').forEach((char, index) => {
+                        const span = document.createElement('span');
+                        span.innerText = char;
+                        span.classList.add('char-bounce');
+                        span.style.setProperty('--i', index); 
+                        link.appendChild(span);
+                    });
+                    
+                    // Add dropdown arrow back
+                    const arrow = document.createElement('span');
+                    arrow.classList.add('dropdown-arrow');
+                    link.appendChild(arrow);
+                }
+            }
+        });
+
+        // 2. Mobile Toggle
+        const toggle = document.querySelector('.mobile-toggle');
+        const menu = document.querySelector('.nav-menu');
+
+        toggle.addEventListener('click', () => {
+            menu.classList.toggle('active');
+        });
+
+        // 3. Mobile Dropdown Toggle
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                // Add mobile dropdown arrow
+                const arrow = document.createElement('span');
+                arrow.classList.add('mobile-dropdown-arrow');
+                arrow.innerHTML = '▼';
+                link.appendChild(arrow);
+                
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const navItem = link.parentElement;
+                    const dropdown = navItem.querySelector('.dropdown');
+                    
+                    // Close other dropdowns
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        if (item !== navItem) {
+                            item.classList.remove('active');
+                            item.querySelector('.dropdown').classList.remove('active');
+                        }
+                    });
+                    
+                    // Toggle current dropdown
+                    navItem.classList.toggle('active');
+                    dropdown.classList.toggle('active');
+                });
+            });
+        }
+
+        // 4. Dropdown button hover effects
+        document.querySelectorAll('.dropdown-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                // Add a subtle sound effect (visual only)
+                this.style.transform = this.classList.contains('btn-gradient-fill') 
+                    ? 'scale(1.02)' 
+                    : this.classList.contains('btn-glow-slide') 
+                    ? 'translateX(5px)' 
+                    : '';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+            });
+        });
+    </script>
+</body>
+</html>

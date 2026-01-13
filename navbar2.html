@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk HUD Navbar Fixed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 1. SETUP & BACKGROUND --- */
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff0055;
+            --neon-purple: #b300ff;
+            --neon-green: #00ff9d;
+            --hud-bg: rgba(16, 20, 24, 0.95);
+            --grid-color: rgba(0, 243, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            color: var(--neon-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            height: 150vh;
+            overflow-x: hidden;
+            
+            /* Moving Grid Background */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        /* --- 2. THE HUD CONTAINER (LAYOUT ONLY) --- */
+        /* This container is now invisible and allows overflow */
+        .hud-nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1000px;
+            height: 70px;
+            
+            /* Layout settings */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 1000;
+        }
+
+        /* --- 2.5 THE HUD SHAPE (VISUALS ONLY) --- */
+        /* This div sits behind the content and holds the clip-path/background */
+        .hud-shape {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--hud-bg);
+            border: 1px solid var(--neon-cyan);
+            
+            /* The "Chamfered" Sci-Fi Shape */
+            clip-path: polygon(
+                15px 0, 100% 0, 
+                100% calc(100% - 15px), calc(100% - 15px) 100%, 
+                0 100%, 0 15px
+            );
+            
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            z-index: -1; /* Puts it behind the text/buttons */
+            pointer-events: none; /* Lets clicks pass through if needed */
+        }
+
+        /* Decorative "Screws" - Moved to .hud-shape to stick to the background */
+        .hud-shape::before, .hud-shape::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 5px var(--neon-cyan);
+            z-index: 1;
+        }
+        /* Adjusted positioning slightly to ensure they aren't clipped by the chamfer */
+        .hud-shape::before { top: 5px; left: 18px; } 
+        .hud-shape::after { bottom: 5px; right: 18px; }
+
+        /* --- 3. SYSTEM LOGO --- */
+        .sys-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--neon-pink);
+            border-radius: 50%;
+            animation: blink 1s steps(2) infinite;
+        }
+
+        /* --- 4. NAVIGATION MENU --- */
+        .hud-menu {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Main Navigation Buttons */
+        .nav-main-btn {
+            text-decoration: none;
+            color: var(--neon-cyan);
+            font-size: 1.1rem;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            background: transparent;
+            border: none;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-main-btn::before, .nav-main-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 100%;
+            border: 1px solid var(--neon-cyan);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-main-btn::before { left: -15px; border-right: none; }
+        .nav-main-btn::after { right: -15px; border-left: none; }
+
+        .nav-main-btn:hover {
+            color: #fff;
+            text-shadow: 2px 0 var(--neon-pink), -2px 0 var(--neon-cyan);
+        }
+
+        .nav-main-btn:hover::before { left: -10px; opacity: 1; }
+        .nav-main-btn:hover::after { right: -10px; opacity: 1; }
+
+        .nav-arrow {
+            display: inline-block;
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .nav-container.active .nav-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* --- 5. DROPDOWN CONTAINERS --- */
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0; /* Align left edge */
+            width: 220px;
+            background: rgba(10, 15, 20, 0.95);
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            
+            /* Clip path for dropdown itself is fine because children don't overflow IT */
+            clip-path: polygon(
+                0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 
+                10px 100%, 0 calc(100% - 10px)
+            );
+            
+            overflow: hidden;
+            z-index: 2000; /* Ensure it sits on top of everything */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            margin-top: 10px; /* Small gap from button */
+        }
+
+        .nav-container.active .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Dropdown Links */
+        .dropdown-link {
+            display: block;
+            padding: 15px 20px;
+            color: var(--neon-cyan);
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-link:last-child { border-bottom: none; }
+
+        .dropdown-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .dropdown-link:hover {
+            background: rgba(0, 243, 255, 0.1);
+            color: #fff;
+            padding-left: 25px;
+        }
+
+        .dropdown-link:hover::before { left: 100%; }
+
+        /* --- 6. UNIQUE DROPDOWN ANIMATIONS --- */
+        #dashboard-dropdown { border-color: var(--neon-green); }
+        #dashboard-dropdown .dropdown-link { color: var(--neon-green); }
+        .nav-container.active #dashboard-dropdown { animation: matrixRain 0.8s forwards; }
+
+        #mission-dropdown { border-color: var(--neon-pink); }
+        #mission-dropdown .dropdown-link { color: var(--neon-pink); }
+        .nav-container.active #mission-dropdown { animation: pulseExpand 0.6s forwards; }
+
+        #armory-dropdown { border-color: var(--neon-cyan); }
+        #armory-dropdown .dropdown-link { color: var(--neon-cyan); }
+        .nav-container.active #armory-dropdown { animation: scanReveal 0.7s forwards; }
+
+        #logs-dropdown { border-color: var(--neon-purple); }
+        #logs-dropdown .dropdown-link { color: var(--neon-purple); }
+        .nav-container.active #logs-dropdown { animation: glitchAppear 0.5s forwards; }
+
+        /* --- 7. ANIMATION KEYFRAMES --- */
+        @keyframes blink {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 30px; }
+        }
+
+        @keyframes glitch-skew {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(-10deg); }
+            40% { transform: skew(10deg); }
+            60% { transform: skew(-5deg); }
+            80% { transform: skew(5deg); }
+            100% { transform: skew(0deg); }
+        }
+
+        @keyframes matrixRain {
+            0% { opacity: 0; transform: translateY(-20px); filter: hue-rotate(0deg); }
+            50% { opacity: 0.5; transform: translateY(5px); filter: hue-rotate(90deg); }
+            100% { opacity: 1; transform: translateY(0); filter: hue-rotate(0deg); }
+        }
+
+        @keyframes pulseExpand {
+            0% { opacity: 0; transform: translateY(-20px) scale(0.8); box-shadow: 0 0 0 rgba(255, 0, 85, 0); }
+            70% { opacity: 0.7; transform: translateY(5px) scale(1.05); box-shadow: 0 0 20px rgba(255, 0, 85, 0.5); }
+            100% { opacity: 1; transform: translateY(0) scale(1); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); }
+        }
+
+        @keyframes scanReveal {
+            0% { opacity: 0; transform: translateY(-20px); clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); }
+            50% { opacity: 0.5; clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%); }
+            100% { opacity: 1; transform: translateY(0); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+        }
+
+        @keyframes glitchAppear {
+            0% { opacity: 0; transform: translateY(-20px) translateX(0); }
+            20% { opacity: 0.3; transform: translateY(-15px) translateX(-5px); }
+            40% { opacity: 0.5; transform: translateY(-10px) translateX(5px); }
+            60% { opacity: 0.7; transform: translateY(-5px) translateX(-3px); }
+            80% { opacity: 0.9; transform: translateY(5px) translateX(3px); }
+            100% { opacity: 1; transform: translateY(0) translateX(0); }
+        }
+
+        /* --- 8. DECORATIVE SCAN LINE --- */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--neon-cyan);
+            opacity: 0.5;
+            animation: scan 4s linear infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* --- 9. MOBILE --- */
+        @media (max-width: 768px) {
+            .hud-nav {
+                height: auto;
+                flex-direction: column;
+                padding: 20px;
+                /* Note: We remove clip-path from here in mobile too */
+            }
+
+            /* Apply mobile shape to the background layer */
+            .hud-shape {
+                clip-path: polygon(
+                    15px 0, 100% 0, 
+                    100% 100%, 0 100%, 
+                    0 15px
+                );
+            }
+            
+            .hud-menu {
+                margin-top: 20px;
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+                width: 100%;
+            }
+            
+            .nav-container {
+                width: 100%;
+            }
+            
+            .dropdown-content {
+                position: relative;
+                width: 100%;
+                margin-top: 5px;
+                box-shadow: none;
+                background: rgba(0,0,0,0.3);
+            }
+            
+            .nav-main-btn::before, .nav-main-btn::after { 
+                display: none; 
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav class="hud-nav">
+        <div class="hud-shape"></div>
+        
+        <div class="scan-line"></div>
+
+        <div class="sys-logo">
+            <div class="status-dot"></div>
+            SYSTEM_OS v2.0
+        </div>
+
+        <div class="hud-menu">
+            <div class="nav-container" id="dashboard-nav">
+                <button class="nav-main-btn" data-text="DASHBOARD">
+                    DASHBOARD <span class="nav-arrow">▼</span>
+                </button>
+                <div class="dropdown-content" id="dashboard-dropdown">
+                    <a href="#" class="dropdown-link">SYSTEM STATUS</a>
+                    <a href="#" class="dropdown-link">PERFORMANCE</a>
+                    <a href="#" class="dropdown-link">NETWORK MAP</a>
+                    <a href="#" class="dropdown-link">SECURITY FEED</a>
+                </div>
+            </div>
+
+            <div class="nav-container" id="mission-nav">
+                <button class="nav-main-btn" data-text="MISSION">
+                    MISSION <span class="nav-arrow">▼</span>
+                </button>
+                <div class="dropdown-content" id="mission-dropdown">
+                    <a href="#" class="dropdown-link">ACTIVE OBJECTIVES</a>
+                    <a href="#" class="dropdown-link">BRIEFING</a>
+                    <a href="#" class="dropdown-link">TEAM STATUS</a>
+                    <a href="#" class="dropdown-link">EXTRACTION</a>
+                </div>
+            </div>
+
+            <div class="nav-container" id="armory-nav">
+                <button class="nav-main-btn" data-text="ARMORY">
+                    ARMORY <span class="nav-arrow">▼</span>
+                </button>
+                <div class="dropdown-content" id="armory-dropdown">
+                    <a href="#" class="dropdown-link">WEAPONS</a>
+                    <a href="#" class="dropdown-link">CYBERNETICS</a>
+                    <a href="#" class="dropdown-link">GEAR</a>
+                    <a href="#" class="dropdown-link">UPGRADES</a>
+                </div>
+            </div>
+
+            <div class="nav-container" id="logs-nav">
+                <button class="nav-main-btn" data-text="LOGS">
+                    LOGS <span class="nav-arrow">▼</span>
+                </button>
+                <div class="dropdown-content" id="logs-dropdown">
+                    <a href="#" class="dropdown-link">SYSTEM LOGS</a>
+                    <a href="#" class="dropdown-link">COMM CHANNELS</a>
+                    <a href="#" class="dropdown-link">ARCHIVES</a>
+                    <a href="#" class="dropdown-link">ENCRYPTED DATA</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div style="margin-top: 150px; text-align: center; padding: 20px;">
+        <h1 style="font-size: 3rem; text-transform: uppercase;">Secure Connection Established</h1>
+        <p style="opacity: 0.7;">Click on the navigation buttons to deploy dropdown menus with unique animations.</p>
+        <div style="margin-top: 50px; display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
+            <div style="border: 1px solid var(--neon-green); padding: 15px; width: 200px;">
+                <h3 style="color: var(--neon-green);">DASHBOARD</h3>
+                <p style="font-size: 0.9rem;">Matrix Rain Animation</p>
+            </div>
+            <div style="border: 1px solid var(--neon-pink); padding: 15px; width: 200px;">
+                <h3 style="color: var(--neon-pink);">MISSION</h3>
+                <p style="font-size: 0.9rem;">Pulse Expansion</p>
+            </div>
+            <div style="border: 1px solid var(--neon-cyan); padding: 15px; width: 200px;">
+                <h3 style="color: var(--neon-cyan);">ARMORY</h3>
+                <p style="font-size: 0.9rem;">Scan Line Reveal</p>
+            </div>
+            <div style="border: 1px solid var(--neon-purple); padding: 15px; width: 200px;">
+                <h3 style="color: var(--neon-purple);">LOGS</h3>
+                <p style="font-size: 0.9rem;">Glitch Effect</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle dropdown interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const navContainers = document.querySelectorAll('.nav-container');
+            
+            navContainers.forEach(container => {
+                const btn = container.querySelector('.nav-main-btn');
+                const dropdown = container.querySelector('.dropdown-content');
+                
+                // Toggle dropdown on click
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // Close other open dropdowns
+                    navContainers.forEach(otherContainer => {
+                        if (otherContainer !== container && otherContainer.classList.contains('active')) {
+                            otherContainer.classList.remove('active');
+                        }
+                    });
+                    
+                    // Toggle current dropdown
+                    container.classList.toggle('active');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!container.contains(e.target)) {
+                        container.classList.remove('active');
+                    }
+                });
+                
+                // Add hover effect for desktop
+                if (window.innerWidth > 768) {
+                    container.addEventListener('mouseenter', function() {
+                        // Close other dropdowns
+                        navContainers.forEach(otherContainer => {
+                            if (otherContainer !== container && otherContainer.classList.contains('active')) {
+                                otherContainer.classList.remove('active');
+                            }
+                        });
+                        
+                        // Open current dropdown
+                        container.classList.add('active');
+                    });
+                    
+                    container.addEventListener('mouseleave', function() {
+                        // Close dropdown after a short delay
+                        setTimeout(() => {
+                            if (!container.matches(':hover')) {
+                                container.classList.remove('active');
+                            }
+                        }, 300);
+                    });
+                }
+            });
+            
+            // Add glitch animation on hover for main buttons
+            const navButtons = document.querySelectorAll('.nav-main-btn');
+            navButtons.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    this.style.animation = 'glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both 1';
+                });
+                
+                btn.addEventListener('animationend', function() {
+                    this.style.animation = '';
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
